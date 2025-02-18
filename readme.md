@@ -1,75 +1,113 @@
-Hostel Management System
+# Hostel Management System
 
-Welcome to the Hostel Management System project! This system provides a comprehensive solution for managing hostel rooms and bookings. It includes a frontend for students to book rooms and check availability and an admin panel for hostel administrators to manage room details and availability.
+## Overview
 
-Features
+The Hostel Management System is a web application designed to streamline the management of hostel rooms and bookings. It provides a user-friendly interface for students to book rooms and check availability, as well as a robust admin panel for hostel administrators to manage room details, bookings, and generate reports.
 
-For Students:
+## Features
 
-Room Booking: Easily book hostel rooms by providing the necessary personal details.
+### For Students:
 
-Availability Check: Check the real-time availability of rooms before booking.
+*   **Room Booking:** Students can easily book available hostel rooms by providing their personal details, course information, and contact information.
+*   **Availability Check:** Real-time room availability is displayed, allowing students to see which rooms are currently available for booking.
+*   **Group Bookings:** Students can book multiple rooms for a group, specifying the group size during the booking process.
+*   **Dynamic Pricing:** The system calculates the booking price based on the room's base price and seasonal pricing rules.
+*   **SMS Confirmation:** Students receive an SMS confirmation message upon successful booking.
 
-For Admins:
+### For Administrators:
 
-Room Management: Add new rooms, update existing room details (number of beds, room type, floor, balcony availability, etc.).
+*   **Secure Login:** Administrators can securely log in to the admin panel using their username and password.
+*   **Room Management:**
+    *   Add new rooms with details such as room number, number of beds, room type (single/double), floor, balcony availability, base price, and seasonal price.
+    *   Update existing room details.
+    *   Delete rooms.
+*   **Role-Based Access Control:** Different administrator roles (e.g., admin, room manager, booking manager) can be assigned with specific permissions to manage different aspects of the system.
+*   **Reporting and Analytics:**
+    *   Generate occupancy rate reports to track the percentage of occupied rooms.
+    *   Generate revenue reports to track total revenue.
 
-Availability Management: Mark rooms as available or unavailable based on maintenance or other factors.
+## Technologies Used
 
-Project Structure
+*   **Frontend:** HTML, CSS, JavaScript
+*   **Backend:** Node.js, Express.js
+*   **Database:** MongoDB
+*   **Authentication:** JSON Web Tokens (JWT)
+*   **SMS Integration:** Twilio
 
-frontend/: Contains HTML, CSS, and JavaScript files for the frontend user interface.
+## API Endpoints
 
-server.js: Backend server built using Node.js and Express.js. Handles API requests, database operations (if used), and serves the frontend files.
+### Student API
 
-Installation and Setup
+*   `GET /api/bookings/rooms`: Fetch all available rooms.
+*   `POST /api/bookings/book`: Book a room with provided student details.
 
-To set up the Hostel Management System locally, follow these steps:
+### Admin API
 
-Clone the repository:
+*   `POST /api/auth/login`: Authenticate an administrator and receive a JWT.
+*   `POST /api/admin/rooms`: Add a new room (protected, admin/room manager role).
+*   `GET /api/admin/rooms`: Fetch all rooms (protected, admin/room manager/booking manager role).
+*   `PUT /api/admin/rooms/:id`: Update a room (protected, admin/room manager role).
+*   `DELETE /api/admin/rooms/:id`: Delete a room (protected, admin role).
+*   `GET /api/reports/occupancy`: Get the occupancy rate (protected, admin/room manager role).
 
-git clone https://github.com/your-username/hostel-management-system.git
+## Installation and Setup
 
-cd hostel-management-system
+1.  **Clone the repository:**
 
-Install dependencies:
+    ```bash
+    git clone <repository_url>
+    cd <repository_directory>
+    ```
 
-npm install
+2.  **Install dependencies:**
 
-Start the server:
+    ```bash
+    npm install
+    cd backend
+    npm install
+    cd ../frontend
+    npm install
+    ```
 
-node server.js
+3.  **Configure the database:**
 
-Access the application:
+    *   Ensure you have MongoDB installed and running.
+    *   Update the connection string in [db.js](http://_vscodecontentref_/1) with your MongoDB connection details.
 
-Open index.html in your browser to access the student booking interface.
+4.  **Configure Twilio:**
 
-Open admin.html in your browser to access the admin panel for room management.
+    *   Create a Twilio account and obtain your Account SID and Auth Token.
+    *   Update the [accountSid](http://_vscodecontentref_/2) and [authToken](http://_vscodecontentref_/3) variables in [bookings.js](http://_vscodecontentref_/4) with your Twilio credentials.
+    *   Obtain a Twilio phone number and update the [from](http://_vscodecontentref_/5) number in [bookings.js](http://_vscodecontentref_/6).
 
-API Endpoints
+5.  **Set the JWT secret:**
 
-The backend provides the following API endpoints:
+    *   Replace `'your-secret-key'` in [auth.js](http://_vscodecontentref_/7) and [auth.js](http://_vscodecontentref_/8) with a strong, randomly generated secret key. Store this key securely (e.g., in an environment variable).
 
-GET /api/rooms: Fetch all available rooms.
+6.  **Create an initial admin user:**
 
-POST /api/book: Book a room with provided student details.
+    *   Use a tool like MongoDB Compass or the MongoDB shell to create an initial admin user in the `users` collection.  Ensure the user has the [role](http://_vscodecontentref_/9) field set to `"admin"`.  Hash the password using bcrypt before storing it in the database.
 
-POST /api/admin/rooms: Add or update room details (admin panel).
+7.  **Start the server:**
 
-GET /api/admin/rooms: Fetch all rooms for admin management.
+    ```bash
+    cd backend
+    node server.js
+    ```
 
-Technologies Used
+8.  **Access the application:**
 
-Frontend: HTML, CSS, JavaScript (Vanilla)
+    *   Open [index.html](http://_vscodecontentref_/10) in your browser to access the student booking interface (e.g., `http://localhost:5000`).
+    *   Open [admin.html](http://_vscodecontentref_/11) in your browser to access the admin panel.
 
-Backend: Node.js, Express.js
+## Authentication
 
-Database: (Optional, if implemented)
+The admin panel is protected by JWT authentication. After logging in, the server will return a JWT that must be included in the `x-auth-token` header of subsequent requests to protected API endpoints.
 
-Contributing
+## Contributing
 
 Contributions are welcome! If you have any ideas for improvements or new features, feel free to submit a pull request.
 
-License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
