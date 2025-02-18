@@ -1,28 +1,61 @@
 const express = require('express');
 const router = express.Router();
 const Room = require('../models/room');
+const {
+    auth,
+    adminAuth
+} = require('../middleware/auth'); // Add authentication middleware
 
-// Create a new room
-router.post('/rooms', async (req, res) => {
+// Add or update room details (protected route)
+router.post('/rooms', adminAuth, async (req, res) => {
     try {
         const room = new Room(req.body);
         await room.save();
-        res.status(201).send(room);
+        res.status(201).json(room);
     } catch (err) {
-        res.status(400).send(err);
+        console.error(err);
+        res.status(400).send(err.message);
     }
 });
 
-// Update room availability
-router.put('/rooms/:id', async (req, res) => {
+// Get all rooms for admin management (protected route)
+router.get('/rooms', adminAuth, async (req, res) => {
     try {
-        const room = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!room) {
-            return res.status(404).send();
-        }
-        res.send(room);
+        const rooms = await Room.find();
+        res.json(rooms);
     } catch (err) {
-        res.status(400).send(err);
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
+
+// Update a room (protected route)
+router.put('/rooms/:id', adminAuth, async (req, res) => {
+    try {
+        const room = await Room.findByIdAndUpdate(req.params.id, req.body, {
+            new: true
+        });
+        if (!room) {
+            return res.status(404).send('Room not found');
+        }
+        res.json(room);
+    } catch (err) {
+        console.error(err);
+        res.status(400).send(err.message);
+    }
+});
+
+// Delete a room (protected route)
+router.delete('/rooms/:id', adminAuth, async (req, res) => {
+    try {
+        const room = await Room.findByIdAndDelete(req.params.id);
+        if (!room) {
+            return res.status(404).send('Room not found');
+        }
+        res.send('Room deleted');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
     }
 });
 

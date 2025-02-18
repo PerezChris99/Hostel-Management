@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <h1>Admin Panel</h1>
+
+    <div id="login-form">
+        <h2>Admin Login</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <div id="admin-panel" style="display:none;">
+        <form id="room-form">
+            <input type="text" id="room-number" placeholder="Room Number" required>
+            <input type="number" id="beds" placeholder="Number of Beds" required>
+            <input type="text" id="type" placeholder="Room Type (single/double)" required>
+            <input type="number" id="floor" placeholder="Floor Number" required>
+            <label for="balcony">Balcony:</label>
+            <input type="checkbox" id="balcony">
+            <button type="submit">Add/Update Room</button>
+        </form>
+
+        <h2>Rooms List</h2>
+        <div id="admin-rooms-list"></div>
+
+        <h2>Reports</h2>
+        <button id="get-occupancy">Get Occupancy Rate</button>
+        <div id="occupancy-rate"></div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

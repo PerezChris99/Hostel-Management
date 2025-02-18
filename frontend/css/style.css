@@ -27,3 +27,13 @@ input, select, button {
     padding: 10px;
     font-size: 16px;
 }
+
+#rooms-list {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+#rooms-list div {
+    margin-bottom: 5px;
+}

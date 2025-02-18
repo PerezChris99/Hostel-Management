@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/styles.css">
-    <title>Hostel Management System</title>
+    <title>Hostel Booking System</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <div id="app">
         <h1>Hostel Booking System</h1>
@@ -19,11 +21,18 @@
                 <input type="text" id="studentId" placeholder="Student ID" required>
                 <input type="text" id="personalPhone" placeholder="Personal Phone" required>
                 <input type="text" id="caretakerPhone" placeholder="Caretaker Phone" required>
-                <select id="roomSelect" required></select>
+                <input type="number" id="groupSize" placeholder="Group Size" min="1" value="1" required>
+                <select id="roomSelect" required>
+                    <option value="">Select a Room</option>
+                </select>
                 <button type="submit">Book Room</button>
             </form>
+        </div>
+        <div id="rooms-list">
+            <h2>Available Rooms</h2>
         </div>
     </div>
     <script src="js/main.js"></script>
 </body>
+
 </html>
