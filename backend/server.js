@@ -21,6 +21,12 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/auth', require('./routes/auth')); // Add authentication routes
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/users', require('./routes/users')); // Add user routes
+
+// For any routes that don't match API routes, serve the frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Hostel Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Hostel Management System</h1>
+            <nav>
+                <ul>
+                    <li><a href="student-dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="book-room.html">Book Room</a></li>
+                    <li><a href="my-bookings.html">My Bookings</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                    <li><a href="#" id="logout-btn">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2>Student Dashboard</h2>
+        <div class="dashboard-widgets">
+            <div class="widget">
+                <h3>Quick Actions</h3>
+                <ul class="action-list">
+                    <li><a href="book-room.html" class="btn">Book a Room</a></li>
+                    <li><a href="my-bookings.html" class="btn">View My Bookings</a></li>
+                    <li><a href="profile.html" class="btn">Update Profile</a></li>
+                </ul>
+            </div>
+            <div class="widget">
+                <h3>Recent Notifications</h3>
+                <div id="notifications">
+                    <p>No new notifications</p>
+                </div>
+            </div>
+        </div>
+
+        <section class="info-section">
+            <h3>Available Rooms</h3>
+            <div id="rooms-list">
+                <!-- Rooms will be populated here -->
+                <p>Loading rooms...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Hostel Management System</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/student-portal.js"></script>
+</body>
+</html>

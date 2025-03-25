@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Booking = require('../models/booking');
 const Room = require('../models/room');
-const twilio = require('twilio'); // Import Twilio
+const twilio = require('twilio');
+const { auth } = require('../middleware/auth');
 
 // Twilio credentials (replace with your actual credentials)
-const accountSid = 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; // Your Account SID from twilio.com
-const authToken = 'your_auth_token'; // Your Auth Token from twilio.com
+const accountSid = 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+const authToken = 'your_auth_token';
 
 const client = twilio(accountSid, authToken);
 
@@ -22,8 +23,21 @@ router.get('/rooms', async (req, res) => {
     }
 });
 
+// Get student's bookings
+router.get('/my-bookings', auth, async (req, res) => {
+    try {
+        const bookings = await Booking.find({ userId: req.user.id })
+            .populate('room')
+            .sort({ bookingDate: -1 });
+        res.json(bookings);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
+
 // Book a room
-router.post('/book', async (req, res) => {
+router.post('/book', auth, async (req, res) => {
     try {
         const {
             name,
@@ -34,7 +48,9 @@ router.post('/book', async (req, res) => {
             personalPhone,
             caretakerPhone,
             room: roomId,
-            groupSize
+            groupSize,
+            startDate,
+            endDate
         } = req.body;
 
         // Validate room ID
@@ -68,7 +84,17 @@ router.post('/book', async (req, res) => {
             }
         }
 
+        // Calculate total price based on duration
+        let totalPrice = price;
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            totalPrice = price * days;
+        }
+
         const booking = new Booking({
+            userId: req.user.id, // Link booking to user
             name,
             course,
             university,
@@ -77,8 +103,11 @@ router.post('/book', async (req, res) => {
             personalPhone,
             caretakerPhone,
             room: roomId,
-            price, // Store the calculated price
-            groupSize
+            price: totalPrice,
+            groupSize,
+            startDate,
+            endDate,
+            status: 'pending'
         });
 
         await booking.save();
@@ -90,9 +119,9 @@ router.post('/book', async (req, res) => {
         // Send SMS confirmation
         client.messages
             .create({
-                body: `Your booking for Room ${room.number} is confirmed. Price: $${price.toFixed(2)}`,
-                to: personalPhone, // Student's phone number
-                from: '+15017250604' // Your Twilio phone number
+                body: `Your booking for Room ${room.number} is confirmed. Price: $${totalPrice.toFixed(2)}`,
+                to: personalPhone,
+                from: '+15017250604'
             })
             .then(message => console.log(message.sid))
             .catch(error => console.error('Twilio Error:', error));
@@ -100,7 +129,92 @@ router.post('/book', async (req, res) => {
         res.status(201).send(booking);
     } catch (err) {
         console.error(err);
-        res.status(400).send(err.message); // Send specific error message
+        res.status(400).send(err.message);
+    }
+});
+
+// Cancel a booking
+router.put('/cancel/:id', auth, async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id);
+        
+        if (!booking) {
+            return res.status(404).send('Booking not found');
+        }
+        
+        // Check if user owns this booking
+        if (booking.userId.toString() !== req.user.id) {
+            return res.status(403).send('Not authorized to cancel this booking');
+        }
+        
+        // Only allow cancellation of pending or confirmed bookings
+        if (!['pending', 'confirmed'].includes(booking.status)) {
+            return res.status(400).send('Cannot cancel booking with status: ' + booking.status);
+        }
+        
+        booking.status = 'cancelled';
+        await booking.save();
+        
+        // Make the room available again
+        const room = await Room.findById(booking.room);
+        if (room) {
+            room.available = true;
+            await room.save();
+        }
+        
+        res.json(booking);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
+
+// Extend a booking
+router.put('/extend/:id', auth, async (req, res) => {
+    try {
+        const { newEndDate } = req.body;
+        const booking = await Booking.findById(req.params.id);
+        
+        if (!booking) {
+            return res.status(404).send('Booking not found');
+        }
+        
+        // Check if user owns this booking
+        if (booking.userId.toString() !== req.user.id) {
+            return res.status(403).send('Not authorized to extend this booking');
+        }
+        
+        if (booking.status !== 'confirmed') {
+            return res.status(400).send('Can only extend confirmed bookings');
+        }
+        
+        // Calculate additional cost
+        const currentEnd = new Date(booking.endDate);
+        const newEnd = new Date(newEndDate);
+        
+        if (newEnd <= currentEnd) {
+            return res.status(400).send('New end date must be after current end date');
+        }
+        
+        const additionalDays = Math.ceil((newEnd - currentEnd) / (1000 * 60 * 60 * 24));
+        const dailyRate = booking.price / Math.ceil((currentEnd - new Date(booking.startDate)) / (1000 * 60 * 60 * 24));
+        const additionalCost = dailyRate * additionalDays;
+        
+        booking.endDate = newEndDate;
+        booking.price += additionalCost;
+        booking.extensionHistory = booking.extensionHistory || [];
+        booking.extensionHistory.push({
+            previousEndDate: booking.endDate,
+            newEndDate,
+            additionalCost,
+            extensionDate: Date.now()
+        });
+        
+        await booking.save();
+        res.json(booking);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
     }
 });
 
