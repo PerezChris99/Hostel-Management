@@ -5,16 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { auth } = require('../middleware/auth');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-
-// Create a transporter for sending emails
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'your-email@gmail.com', // Replace with your email
-        pass: 'your-email-password'    // Replace with your email password
-    }
-});
+const { sendEmail } = require('../utils/emailService'); // Use the utility instead of direct import
 
 // Register a new user
 router.post('/register', async (req, res) => {
@@ -120,22 +111,22 @@ router.post('/reset-password-request', async (req, res) => {
 
         // Send email with reset link
         const resetUrl = `http://localhost:5000/reset-password/${resetToken}`;
-        const mailOptions = {
-            to: user.email,
-            from: 'your-email@gmail.com',
-            subject: 'Password Reset',
-            text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
-                   Please click on the following link, or paste this into your browser to complete the process:\n\n
-                   ${resetUrl}\n\n
-                   If you did not request this, please ignore this email and your password will remain unchanged.\n`
-        };
+        const emailText = `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+                           Please click on the following link, or paste this into your browser to complete the process:\n\n
+                           ${resetUrl}\n\n
+                           If you did not request this, please ignore this email and your password will remain unchanged.\n`;
+        const emailHtml = `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p>
+                           <p>Please click on the following link, or paste this into your browser to complete the process:</p>
+                           <p><a href="${resetUrl}">${resetUrl}</a></p>
+                           <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>`;
 
-        transporter.sendMail(mailOptions, (err) => {
-            if (err) {
-                return res.status(500).json({ msg: 'Error sending email' });
-            }
+        try {
+            await sendEmail(user.email, 'Password Reset', emailText, emailHtml);
             res.json({ msg: 'Password reset email sent' });
-        });
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json({ msg: 'Error sending email' });
+        }
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -165,15 +156,16 @@ router.post('/reset-password/:token', async (req, res) => {
         await user.save();
 
         // Send confirmation email
-        const mailOptions = {
-            to: user.email,
-            from: 'your-email@gmail.com',
-            subject: 'Your password has been changed',
-            text: `This is a confirmation that the password for your account ${user.email} has just been changed.`
-        };
+        const emailText = `This is a confirmation that the password for your account ${user.email} has just been changed.`;
+        const emailHtml = `<p>This is a confirmation that the password for your account ${user.email} has just been changed.</p>`;
 
-        transporter.sendMail(mailOptions);
-        res.json({ msg: 'Password updated successfully' });
+        try {
+            await sendEmail(user.email, 'Your password has been changed', emailText, emailHtml);
+            res.json({ msg: 'Password updated successfully' });
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json({ msg: 'Error sending confirmation email' });
+        }
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');

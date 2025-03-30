@@ -1,0 +1,5 @@
+{
+  "jwtSecret": "your_production_jwt_secret_key",
+  "mongoURI": "your_production_mongodb_connection_string",
+  "port": 8080
+}

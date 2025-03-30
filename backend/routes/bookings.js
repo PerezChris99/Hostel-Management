@@ -2,14 +2,20 @@ const express = require('express');
 const router = express.Router();
 const Booking = require('../models/booking');
 const Room = require('../models/room');
-const twilio = require('twilio');
 const { auth } = require('../middleware/auth');
 
-// Twilio credentials (replace with your actual credentials)
-const accountSid = 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-const authToken = 'your_auth_token';
-
-const client = twilio(accountSid, authToken);
+// Twilio setup (optional)
+let twilioClient = null;
+try {
+    const twilio = require('twilio');
+    // Twilio credentials (replace with your actual credentials)
+    const accountSid = 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+    const authToken = 'your_auth_token';
+    twilioClient = twilio(accountSid, authToken);
+    console.log('Twilio client initialized successfully');
+} catch (err) {
+    console.log('Twilio is not installed or configured. SMS notifications will be disabled.');
+}
 
 // Get available rooms
 router.get('/rooms', async (req, res) => {
@@ -116,15 +122,17 @@ router.post('/book', auth, async (req, res) => {
         room.available = false;
         await room.save();
 
-        // Send SMS confirmation
-        client.messages
-            .create({
-                body: `Your booking for Room ${room.number} is confirmed. Price: $${totalPrice.toFixed(2)}`,
-                to: personalPhone,
-                from: '+15017250604'
-            })
-            .then(message => console.log(message.sid))
-            .catch(error => console.error('Twilio Error:', error));
+        // Send SMS confirmation if Twilio is configured
+        if (twilioClient && personalPhone) {
+            twilioClient.messages
+                .create({
+                    body: `Your booking for Room ${room.number} is confirmed. Price: $${totalPrice.toFixed(2)}`,
+                    to: personalPhone,
+                    from: '+15017250604'
+                })
+                .then(message => console.log('SMS sent:', message.sid))
+                .catch(error => console.error('Twilio Error:', error));
+        }
 
         res.status(201).send(booking);
     } catch (err) {

@@ -1,21 +1,6 @@
 const mongoose = require('mongoose');
 
-const ExtensionHistorySchema = new mongoose.Schema({
-    previousEndDate: Date,
-    newEndDate: Date,
-    additionalCost: Number,
-    extensionDate: {
-        type: Date,
-        default: Date.now
-    }
-});
-
 const BookingSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
     name: {
         type: String,
         required: true
@@ -49,14 +34,13 @@ const BookingSchema = new mongoose.Schema({
         ref: 'Room',
         required: true
     },
-    bookingDate: {
-        type: Date,
-        default: Date.now
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     startDate: {
         type: Date,
-        required: true,
-        default: Date.now
+        required: true
     },
     endDate: {
         type: Date
@@ -67,7 +51,6 @@ const BookingSchema = new mongoose.Schema({
     },
     groupSize: {
         type: Number,
-        required: true,
         default: 1
     },
     status: {
@@ -80,9 +63,19 @@ const BookingSchema = new mongoose.Schema({
         enum: ['unpaid', 'partial', 'paid'],
         default: 'unpaid'
     },
-    extensionHistory: [ExtensionHistorySchema],
-    specialRequests: String,
-    notes: String
+    bookingDate: {
+        type: Date,
+        default: Date.now
+    },
+    specialRequests: {
+        type: String
+    },
+    paymentDetails: {
+        method: String,
+        transactionId: String,
+        amountPaid: Number,
+        paidDate: Date
+    }
 });
 
 module.exports = mongoose.model('Booking', BookingSchema);

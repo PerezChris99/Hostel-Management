@@ -3,27 +3,30 @@ const mongoose = require('mongoose');
 const RoomSchema = new mongoose.Schema({
     number: {
         type: String,
-        required: true
-    },
-    beds: {
-        type: Number,
-        required: true
+        required: true,
+        unique: true
     },
     type: {
         type: String,
-        required: true
-    }, // single/double
-    selfContained: {
-        type: Boolean,
-        required: true
+        required: true,
+        enum: ['standard', 'deluxe', 'premium', 'suite']
+    },
+    beds: {
+        type: Number,
+        required: true,
+        min: 1
     },
     floor: {
         type: Number,
         required: true
     },
+    selfContained: {
+        type: Boolean,
+        default: false
+    },
     balcony: {
         type: Boolean,
-        required: true
+        default: false
     },
     available: {
         type: Boolean,
@@ -31,12 +34,29 @@ const RoomSchema = new mongoose.Schema({
     },
     basePrice: {
         type: Number,
-        required: true,
-        default: 100 // Default base price
+        required: true
     },
     seasonalPrice: {
         type: Number
-    } // Optional seasonal price
+    },
+    amenities: [{
+        type: String
+    }],
+    maintenance: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    lastMaintenance: {
+        type: Date
+    },
+    notes: {
+        type: String
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 module.exports = mongoose.model('Room', RoomSchema);

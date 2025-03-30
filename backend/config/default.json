@@ -1,0 +1,6 @@
+{
+  "jwtSecret": "hostel_management_secret_token",
+  "jwtExpiration": "24h",
+  "mongoURI": "mongodb://localhost:27017/hostel-management",
+  "port": 5000
+}
